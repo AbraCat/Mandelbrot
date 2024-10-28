@@ -1,0 +1,8 @@
+.vs
+x64
+Mandelbrot.sln
+Mandelbrot/x64/
+Mandelbrot/Mandelbrot.qrc
+Mandelbrot/Mandelbrot.vcxproj
+Mandelbrot/Mandelbrot.vcxproj.filters
+Mandelbrot/Mandelbrot.vcxproj.user
