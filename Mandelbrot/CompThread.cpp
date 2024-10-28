@@ -1,5 +1,7 @@
 #include "CompThread.h"
 
+#include <iostream>
+
 CompThread::CompThread(QObject* parent) : QThread(parent)
 {
 	finish_req = 0;
@@ -7,7 +9,7 @@ CompThread::CompThread(QObject* parent) : QThread(parent)
 
 CompThread::~CompThread()
 {
-
+	// :]
 }
 
 void CompThread::run()

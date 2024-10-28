@@ -32,6 +32,7 @@ private:
 	double y0;
 	double scale;
 
+	int pixel_size;
 	int iters;
 	int init_hue;
 	int hue_cycle;

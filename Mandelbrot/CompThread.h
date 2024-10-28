@@ -5,6 +5,7 @@
 #include <qpainter.h>
 #include <qstyleoption.h>
 #include <qpainterpath.h>
+
 class CompThread : public QThread
 {
 	Q_OBJECT

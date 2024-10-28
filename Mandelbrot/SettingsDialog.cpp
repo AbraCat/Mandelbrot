@@ -9,11 +9,11 @@ SettingsDialog::SettingsDialog(const std::vector<int>& values, QWidget* parent) 
 	QObject::connect(ui->okBtn, &QPushButton::clicked, this, &SettingsDialog::emit_settings);
 
 	this->values = values;
-	le_vector = std::vector<QLineEdit*>({ ui->iters_le , ui->wheel_le , ui->sizex_le, ui->sizey_le,
+	le_vector = std::vector<QLineEdit*>({ ui->iters_le , ui->wheel_le , ui->pixel_size_le, ui->sizex_le, ui->sizey_le,
 		ui->init_hue_le , ui->hue_cycle_le , ui->hue_dir_le, ui->s_le, ui->v_le });
 	for (int i = 0; i != values.size(); ++i)
 		le_vector[i]->setText(QString::number(values[i]));
-	ranges = std::vector<std::vector<int>>({ {0, 1000}, {1010, 10000}, {50, 3000}, {50, 3000},
+	ranges = std::vector<std::vector<int>>({ {0, 1000}, {1010, 10000}, {1, 10}, { 50, 3000 }, {50, 3000},
 		{0, 359}, {1, 1000}, {0, 1}, {0, 255}, {0, 255} });
 }
 
