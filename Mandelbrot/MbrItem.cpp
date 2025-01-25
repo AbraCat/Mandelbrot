@@ -5,7 +5,7 @@ MbrItem::MbrItem(QLabel* properties_status, QLabel* settings_status) : QGraphics
 	this->properties_status = properties_status;
 	this->settings_status = settings_status;
 
-	pixel_size = 1;
+	pixel_size = 2;
 	size_x = 1940 / pixel_size;
 	size_y = 1100 / pixel_size;
 
