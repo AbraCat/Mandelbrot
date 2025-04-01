@@ -4,7 +4,15 @@
 #include <stdio.h>
 #include <cmath>
 
-clock_t calc_set(MbrProp* p, std::vector<std::vector<int>>* set)
+clock_t (*calc_set)(MbrProp* p, std::vector<std::vector<int>>* set) = calc_set_unr;
+
+void get_point(int n_pixel_x, int n_pixel_y, MbrProp* p, double* x, double* y)
+{
+    *x = (n_pixel_x - p->size_x / 2) / p->scale - p->x0;
+    *y = (n_pixel_y - p->size_y / 2) / p->scale - p->y0;
+}
+
+clock_t calc_set_unopt(MbrProp* p, std::vector<std::vector<int>>* set)
 {
     if (set != nullptr) *set = std::vector<std::vector<int>>(p->size_y, std::vector<int>(p->size_x));
 
@@ -13,8 +21,9 @@ clock_t calc_set(MbrProp* p, std::vector<std::vector<int>>* set)
     {
         for (int j = 0; j < p->size_x; ++j)
         {
-            // size_x / 2 - j = scale * (x0 - xp)
-            double xp = (j - p->size_x / 2) / p->scale - p->x0, yp = (i - p->size_y / 2) / p->scale - p->y0;
+            double xp, yp;
+            get_point(j, i, p, &xp, &yp);
+
             double x = 0, y = 0;
             int iter = 0;
             for (; iter < p->iters; ++iter)
@@ -23,10 +32,61 @@ clock_t calc_set(MbrProp* p, std::vector<std::vector<int>>* set)
                 double new_y = 2*x*y + yp;
                 x = new_x;
                 y = new_y;
-                if (x*x + y*y >= 2) break;
+                if (x*x + y*y >= 4) break;
             }
 
             if (set != nullptr) (*set)[i][j] = iter;
+        }
+    }
+
+    return clock() - start_time;
+}
+
+clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
+{
+    #define unr 4
+    if (set != nullptr) *set = std::vector<std::vector<int>>(p->size_y, std::vector<int>(p->size_x));
+
+    clock_t start_time = clock();
+    for (int i = 0; i < p->size_y; ++i)
+    {
+        for (int j = 0; j < p->size_x; j += unr)
+        {
+            double xp[unr], yp[unr];
+            for (int k = 0; k < 4; ++k) get_point(j + k, i, p, xp + k, yp + k);
+
+            int iter = 0;
+            double x[unr] = {0}, y[unr] = {0};
+            int iters[unr];
+            for (; iter < p->iters; ++iter)
+            {
+                double x2[unr], y2[unr], xy[unr];
+                for (int k = 0; k < unr; ++k) x2[k] = x[k] * x[k];
+                for (int k = 0; k < unr; ++k) y2[k] = y[k] * y[k];
+                for (int k = 0; k < unr; ++k) xy[k] = x[k] * y[k];
+
+                double x2_y2[unr];
+                for (int k = 0; k < unr; ++k) x2_y2[k] = x2[k] - y2[k];
+                double xy2[unr];
+                for (int k = 0; k < unr; ++k) xy2[k] = xy[k] * 2;
+
+                double mod2[unr];
+                for (int k = 0; k < unr; ++k) mod2[k] = x2[k] + y2[k];
+
+                int cmp[unr] = {};
+                for (int k = 0; k < unr; ++k) cmp[k] = (mod2[k] < 4);
+
+                for (int k = 0; k < unr; ++k) if (cmp[k]) iters[k] = iter;
+
+                int mask = 0;
+                for (int k = 0; k < unr; ++k) mask |= (cmp[k] << k);
+                if (!mask) break;
+
+                for (int k = 0; k < unr; ++k) y[k] = xy2[k] + yp[k];
+                for (int k = 0; k < unr; ++k) x[k] = x2_y2[k] + xp[k];
+            }
+
+            if (set != nullptr) for (int k = 0; k < unr; ++k) (*set)[i][j + k] = iters[k] + 1;
         }
     }
 
