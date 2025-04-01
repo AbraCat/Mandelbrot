@@ -62,7 +62,7 @@ void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 void MbrItem::keyPressEvent(QKeyEvent* e)
 {
     const int step = 150;
-    const double scale_mod = 1.8;
+    const float scale_mod = 1.8;
 
     switch (e->key())
     {

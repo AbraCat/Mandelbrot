@@ -21,7 +21,7 @@ public:
     void req_update();
 
 private:
-    double x0, y0, scale;
+    float x0, y0, scale;
 
     std::vector<std::vector<int>> set;
     std::vector<QColor> colors;

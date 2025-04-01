@@ -6,7 +6,7 @@
 
 clock_t (*calc_set)(MbrProp* p, std::vector<std::vector<int>>* set) = calc_set_unr;
 
-void get_point(int n_pixel_x, int n_pixel_y, MbrProp* p, double* x, double* y)
+void get_point(int n_pixel_x, int n_pixel_y, MbrProp* p, float* x, float* y)
 {
     *x = (n_pixel_x - p->size_x / 2) / p->scale - p->x0;
     *y = (n_pixel_y - p->size_y / 2) / p->scale - p->y0;
@@ -21,15 +21,15 @@ clock_t calc_set_unopt(MbrProp* p, std::vector<std::vector<int>>* set)
     {
         for (int j = 0; j < p->size_x; ++j)
         {
-            double xp, yp;
+            float xp, yp;
             get_point(j, i, p, &xp, &yp);
 
-            double x = 0, y = 0;
+            float x = 0, y = 0;
             int iter = 0;
             for (; iter < p->iters; ++iter)
             {
-                double new_x = x*x - y*y + xp;
-                double new_y = 2*x*y + yp;
+                float new_x = x*x - y*y + xp;
+                float new_y = 2*x*y + yp;
                 x = new_x;
                 y = new_y;
                 if (x*x + y*y >= 4) break;
@@ -52,25 +52,25 @@ clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
     {
         for (int j = 0; j < p->size_x; j += unr)
         {
-            double xp[unr], yp[unr];
+            float xp[unr], yp[unr];
             for (int k = 0; k < 4; ++k) get_point(j + k, i, p, xp + k, yp + k);
 
             int iter = 0;
-            double x[unr] = {0}, y[unr] = {0};
+            float x[unr] = {0}, y[unr] = {0};
             int iters[unr];
             for (; iter < p->iters; ++iter)
             {
-                double x2[unr], y2[unr], xy[unr];
+                float x2[unr], y2[unr], xy[unr];
                 for (int k = 0; k < unr; ++k) x2[k] = x[k] * x[k];
                 for (int k = 0; k < unr; ++k) y2[k] = y[k] * y[k];
                 for (int k = 0; k < unr; ++k) xy[k] = x[k] * y[k];
 
-                double x2_y2[unr];
+                float x2_y2[unr];
                 for (int k = 0; k < unr; ++k) x2_y2[k] = x2[k] - y2[k];
-                double xy2[unr];
+                float xy2[unr];
                 for (int k = 0; k < unr; ++k) xy2[k] = xy[k] * 2;
 
-                double mod2[unr];
+                float mod2[unr];
                 for (int k = 0; k < unr; ++k) mod2[k] = x2[k] + y2[k];
 
                 int cmp[unr] = {};
@@ -93,9 +93,9 @@ clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
     return clock() - start_time;
 }
 
-double* time_arr(MbrProp* p, int n)
+float* time_arr(MbrProp* p, int n)
 {
-    double* time = (double*)calloc(n, sizeof(double));
+    float* time = (float*)calloc(n, sizeof(float));
     for (int i = 0; i < n; ++i)
     {
         clock_t ticks = calc_set(p, nullptr);
@@ -104,27 +104,27 @@ double* time_arr(MbrProp* p, int n)
     return time;
 }
 
-double expectation(double* a, int n)
+float expectation(float* a, int n)
 {
-    double e = 0;
+    float e = 0;
     for (int i = 0; i < n; ++i)
         e += a[i];
     return e / n;
 }
 
-double std_dev(double* a, int n, double e)
+float std_dev(float* a, int n, float e)
 {
-    double exp_of_sq = 0;
+    float exp_of_sq = 0;
     for (int i = 0; i < n; ++i)
         exp_of_sq += a[i] * a[i];
     exp_of_sq /= n;
     return std::sqrt(exp_of_sq - e * e);
 }
 
-double exp_of_good_vals(double* a, int n, double e, double std_dev)
+float exp_of_good_vals(float* a, int n, float e, float std_dev)
 {
     const int good_coeff = 2;
-    double good_e = 0;
+    float good_e = 0;
     int good_cnt = 0;
 
     for (int i = 0; i < n; ++i)
@@ -139,7 +139,7 @@ double exp_of_good_vals(double* a, int n, double e, double std_dev)
 
 int measure_mbr_time(MbrProp* p, int n, const char* file_path)
 {
-    double* a = time_arr(p, n);
+    float* a = time_arr(p, n);
 
     FILE* file = fopen(file_path, "a");
     if (file == NULL)
@@ -149,9 +149,9 @@ int measure_mbr_time(MbrProp* p, int n, const char* file_path)
         return 1;
     }
 
-    double e = expectation(a, n);
-    double sigma = std_dev(a, n, e);
-    double good_e = exp_of_good_vals(a, n, e, sigma);
+    float e = expectation(a, n);
+    float sigma = std_dev(a, n, e);
+    float good_e = exp_of_good_vals(a, n, e, sigma);
 
     fprintf(file, "Number of tests: %d\nAverage time: %lf\nStandart deviation: %lf\nAverage time (excluding bad tests): %lf\n\n", 
         n, e, sigma, good_e);
