@@ -80,3 +80,9 @@ CMakeLists.txt.user*
 .rcc/
 .uic/
 /build*/
+
+# ---------------------------------------
+
+result.txt
+o/
+test.exe

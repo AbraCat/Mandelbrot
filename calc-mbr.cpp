@@ -93,7 +93,8 @@ int measure_mbr_time(MbrProp* p, int n, const char* file_path)
     double sigma = std_dev(a, n, e);
     double good_e = exp_of_good_vals(a, n, e, sigma);
 
-    fprintf(file, "avg time: %lf\nstdndart deviation: %lf\navg time (excluding bad tests): %lf\n", e, sigma, good_e);
+    fprintf(file, "Number of tests: %d\nAverage time: %lf\nStandart deviation: %lf\nAverage time (excluding bad tests): %lf\n\n", 
+        n, e, sigma, good_e);
 
     fclose(file);
     free(a);

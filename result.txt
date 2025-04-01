@@ -1,3 +1,0 @@
-avg time: 221.220000
-stdndart deviation: 2.937958
-avg time (excluding bad tests): 221.021277
