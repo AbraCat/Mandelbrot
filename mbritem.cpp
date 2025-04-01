@@ -3,7 +3,8 @@
 #include <QPainter>
 #include <QKeyEvent>
 
-const int size_x = 1600, size_y = 600, iters = 256;
+const int size_x = 1500, size_y = 750, iters = 256;
+int cnt = 0;
 
 MbrItem::MbrItem(QGraphicsItem* parent) : QGraphicsObject(parent)
 {
@@ -19,12 +20,12 @@ MbrItem::MbrItem(QGraphicsItem* parent) : QGraphicsObject(parent)
 
 MbrItem::~MbrItem()
 {
-    //
+    // :/
 }
 
 QRectF MbrItem::boundingRect() const
 {
-    return QRectF(-size_x / 2 - 1, -size_y / 2 - 1, size_x / 2 - 1, size_y / 2 - 1);
+    return QRectF(-size_x / 2 - 1, -size_y / 2 - 1, size_x + 1, size_y + 1);
 }
 
 void MbrItem::req_update()
@@ -37,15 +38,12 @@ void MbrItem::req_update()
 void MbrItem::fill_colors()
 {
     for (int i = 0; i < iters; ++i)
-    {
-        colors[i] = Qt::blue;
-    }
+        colors[i] = QColor((i * 8) % 255, 64, 64);
     colors[iters] = Qt::black;
 }
 
 void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    const int x_shift = -400, y_shift = -200;
     painter->save();
     painter->setPen(QPen(QBrush(Qt::transparent), 0));
 
@@ -54,20 +52,17 @@ void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
         for (int j = -size_x / 2; j < size_x - size_x / 2; ++j)
         {
             painter->setBrush(colors[set[i + size_y / 2][j + size_x / 2]]);
-            painter->drawRect(j + x_shift, i + y_shift, 1, 1);
+            painter->drawRect(j, i, 1, 1);
         }
     }
-
-    // painter->setBrush(Qt::red);
-    // painter->drawRect(0, 0, 10, 10);
 
     painter->restore();
 }
 
 void MbrItem::keyPressEvent(QKeyEvent* e)
 {
-    const int step = 50;
-    const double scale_mod = 1.5;
+    const int step = 150;
+    const double scale_mod = 1.8;
 
     switch (e->key())
     {
