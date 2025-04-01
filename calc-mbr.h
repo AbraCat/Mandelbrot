@@ -12,6 +12,7 @@ struct MbrProp
 
 clock_t calc_set_unopt(MbrProp* p, std::vector<std::vector<int>>* set);
 clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set);
+clock_t calc_set_intr(MbrProp* p, std::vector<std::vector<int>>* set);
 extern clock_t (*calc_set)(MbrProp* p, std::vector<std::vector<int>>* set);
 
 float* time_arr(MbrProp* p, int n);

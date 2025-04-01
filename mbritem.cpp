@@ -37,8 +37,9 @@ void MbrItem::req_update()
 
 void MbrItem::fill_colors()
 {
+    const int l = 16, k = 256 / l, m = 64;
     for (int i = 0; i < iters; ++i)
-        colors[i] = QColor((i * 8) % 255, 64, 64);
+        colors[i] = QColor(i % (l * 2) < l ? k * (i % l) : k * (l - i % l - 1), m, m * (i % 2));
     colors[iters] = Qt::black;
 }
 
@@ -61,7 +62,7 @@ void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
 void MbrItem::keyPressEvent(QKeyEvent* e)
 {
-    const int step = 150;
+    const int step = 200;
     const float scale_mod = 1.8;
 
     switch (e->key())

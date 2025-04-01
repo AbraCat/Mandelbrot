@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
+#include <xmmintrin.h>
 
-clock_t (*calc_set)(MbrProp* p, std::vector<std::vector<int>>* set) = calc_set_unr;
+#define unr 4
+clock_t (*calc_set)(MbrProp* p, std::vector<std::vector<int>>* set) = calc_set_intr;
 
 void get_point(int n_pixel_x, int n_pixel_y, MbrProp* p, float* x, float* y)
 {
@@ -44,10 +46,13 @@ clock_t calc_set_unopt(MbrProp* p, std::vector<std::vector<int>>* set)
 
 clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
 {
-    #define unr 4
     if (set != nullptr) *set = std::vector<std::vector<int>>(p->size_y, std::vector<int>(p->size_x));
 
     clock_t start_time = clock();
+
+    float four[unr];
+    for (int k = 0; k < unr; ++k) four[k] = 4;
+
     for (int i = 0; i < p->size_y; ++i)
     {
         for (int j = 0; j < p->size_x; j += unr)
@@ -67,14 +72,13 @@ clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
 
                 float x2_y2[unr];
                 for (int k = 0; k < unr; ++k) x2_y2[k] = x2[k] - y2[k];
-                float xy2[unr];
-                for (int k = 0; k < unr; ++k) xy2[k] = xy[k] * 2;
+                for (int k = 0; k < unr; ++k) xy[k] = xy[k] + xy[k];
 
                 float mod2[unr];
                 for (int k = 0; k < unr; ++k) mod2[k] = x2[k] + y2[k];
 
                 int cmp[unr] = {};
-                for (int k = 0; k < unr; ++k) cmp[k] = (mod2[k] < 4);
+                for (int k = 0; k < unr; ++k) cmp[k] = (mod2[k] < four[k]);
 
                 for (int k = 0; k < unr; ++k) if (cmp[k]) iters[k] = iter;
 
@@ -82,8 +86,54 @@ clock_t calc_set_unr(MbrProp* p, std::vector<std::vector<int>>* set)
                 for (int k = 0; k < unr; ++k) mask |= (cmp[k] << k);
                 if (!mask) break;
 
-                for (int k = 0; k < unr; ++k) y[k] = xy2[k] + yp[k];
+                for (int k = 0; k < unr; ++k) y[k] = xy[k] + yp[k];
                 for (int k = 0; k < unr; ++k) x[k] = x2_y2[k] + xp[k];
+            }
+
+            if (set != nullptr) for (int k = 0; k < unr; ++k) (*set)[i][j + k] = iters[k] + 1;
+        }
+    }
+
+    return clock() - start_time;
+}
+
+clock_t calc_set_intr(MbrProp* p, std::vector<std::vector<int>>* set)
+{
+    if (set != nullptr) *set = std::vector<std::vector<int>>(p->size_y, std::vector<int>(p->size_x));
+
+    clock_t start_time = clock();
+    float four[unr];
+    for (int k = 0; k < unr; ++k) four[k] = 4;
+    __m128 four_m = _mm_load_ps1(four);
+
+    for (int i = 0; i < p->size_y; ++i)
+    {
+        for (int j = 0; j < p->size_x; j += unr)
+        {
+            float xp[unr], yp[unr];
+            for (int k = 0; k < 4; ++k) get_point(j + k, i, p, xp + k, yp + k);
+            __m128 xp_m = _mm_loadu_ps(xp), yp_m = _mm_loadu_ps(yp);
+
+            float x[unr] = {0}, y[unr] = {0};
+            __m128 x_m = _mm_loadu_ps(x), y_m = _mm_loadu_ps(y);
+
+            int iter = 0;
+            int iters[unr] = {};
+            for (; iter < p->iters; ++iter)
+            {
+                __m128 x2 = _mm_mul_ps(x_m, x_m), y2 = _mm_mul_ps(y_m, y_m), xy = _mm_mul_ps(x_m, y_m);
+                __m128 x2_y2 = _mm_sub_ps(x2, y2);
+                xy = _mm_add_ps(xy, xy);
+
+                __m128 mod2 = _mm_add_ps(x2, y2);
+                __m128 cmp = _mm_cmplt_ps(mod2, four_m);
+
+                int mask = _mm_movemask_ps(cmp);
+                for (int k = 0; k < unr; ++k) if ((mask) & (1 << k)) iters[k] = iter;
+                if (!mask) break;
+
+                x_m = _mm_add_ps(x2_y2, xp_m);
+                y_m = _mm_add_ps(xy, yp_m);
             }
 
             if (set != nullptr) for (int k = 0; k < unr; ++k) (*set)[i][j + k] = iters[k] + 1;
