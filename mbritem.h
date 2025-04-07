@@ -23,7 +23,7 @@ public:
 private:
     float x0, y0, scale;
 
-    std::vector<std::vector<int>> set;
+    int* set;
     std::vector<QColor> colors;
 };
 

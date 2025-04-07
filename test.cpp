@@ -1,7 +1,7 @@
 #include "calc-mbr.h"
 
-MbrProp std_mbr = {1500, 750, 256, 0, 0, 300};
-const int n_tests = 64;
+MbrProp std_mbr = {1504, 750, 256, 0, 0, 300};
+const int n_tests = 256;
 
 #include <stdio.h>
 int main()

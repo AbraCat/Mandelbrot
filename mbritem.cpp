@@ -3,13 +3,14 @@
 #include <QPainter>
 #include <QKeyEvent>
 
-const int size_x = 1500, size_y = 750, iters = 256;
+const int size_x = 1504, size_y = 750, iters = 256;
 int cnt = 0;
 
 MbrItem::MbrItem(QGraphicsItem* parent) : QGraphicsObject(parent)
 {
     scale = 300;
     x0 = y0 = 0;
+    set = nullptr;
 
     colors = std::vector<QColor>(iters + 1);
     setFlags(QGraphicsItem::ItemIsFocusable);
@@ -31,6 +32,7 @@ QRectF MbrItem::boundingRect() const
 void MbrItem::req_update()
 {
     MbrProp prop = {size_x, size_y, iters, x0, y0, scale};
+    free(set);
     calc_set(&prop, &set);
     update();
 }
@@ -52,7 +54,7 @@ void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
     {
         for (int j = -size_x / 2; j < size_x - size_x / 2; ++j)
         {
-            painter->setBrush(colors[set[i + size_y / 2][j + size_x / 2]]);
+            painter->setBrush(colors[set[(i + size_y / 2) * size_x + j + size_x / 2]]);
             painter->drawRect(j, i, 1, 1);
         }
     }
@@ -62,7 +64,7 @@ void MbrItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, Q
 
 void MbrItem::keyPressEvent(QKeyEvent* e)
 {
-    const int step = 200;
+    const int step = 250;
     const float scale_mod = 1.8;
 
     switch (e->key())
