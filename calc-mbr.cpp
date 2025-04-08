@@ -18,9 +18,6 @@ clock_t calc_set_unopt(MbrProp* p, int** set)
 {
     if (set != nullptr) *set = (int*)calloc(p->size_x * p->size_y, sizeof(int));
 
-    // readme
-    // clang / msvc?
-    // less digits in result
     clock_t start_time = clock();
     for (int i = 0; i < p->size_y; ++i)
     {
@@ -206,8 +203,7 @@ int measure_mbr_time(MbrProp* p, int n, const char* file_path)
     float sigma = std_dev(a, n, e);
     float good_e = exp_of_good_vals(a, n, e, sigma);
 
-    fprintf(file, "Number of tests: %d\nAverage time: %.1lf\nStandart deviation: %.1lf\nAverage time (excluding bad tests): %.1lf\n\n", 
-        n, e, sigma, good_e);
+    fprintf(file, "| %d | %.1lf | %.1lf | %.1lf |\n", n, e, sigma, good_e);
 
     fclose(file);
     free(a);

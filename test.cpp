@@ -6,7 +6,7 @@ const int n_tests = 256;
 #include <stdio.h>
 int main()
 {
-    if (measure_mbr_time(&std_mbr, n_tests, "./result.txt") != 0)
+    if (measure_mbr_time(&std_mbr, n_tests, "README.md") != 0)
         return 1;
     return 0;
 }
